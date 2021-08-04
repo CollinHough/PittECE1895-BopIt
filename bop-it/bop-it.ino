@@ -12,7 +12,7 @@
 #define breakBeam 5
 #define led 8
 #define startTime 450000
-#define victoryLight 7
+#define victoryLights 7
 
 unsigned long timerCount = 0; // variable to hold our timer info
 unsigned long roundTime = 0;
@@ -45,12 +45,12 @@ void setup() {
   // Set up breakbeam
   pinMode(breakBeam, INPUT);
   // Set up victory lights
-  pinMode(victoryLight, OUTPUT);
+  pinMode(victoryLights, OUTPUT);
 
   // Set up test led
   pinMode(led, OUTPUT);
 
-  tmrpcm.speakerPin=9;
+  tmrpcm.speakerPin=10;
   if(!SD.begin(SD_ChipSelectPin))
   {
     digitalWrite(led, HIGH);
@@ -88,6 +88,9 @@ void loop() {
   // Start first round
   if (digitalRead(startButton) == HIGH && !startGame)
   {
+    // Stop victory lights if on
+    digitalWrite(victoryLights, LOW);
+    
     // Stop intro song
     //tmrpcm.disable();
     tmrpcm.loop(0);
@@ -192,6 +195,9 @@ void loop() {
       lcd.setCursor(0,1);
       lcd.print("Final Score: " + String(points));
       startGame = false;
+
+      // Turn on victory lights
+      digitalWrite(victoryLights, HIGH);
 
       //Play sweet caroline
       tmrpcm.loop(1);

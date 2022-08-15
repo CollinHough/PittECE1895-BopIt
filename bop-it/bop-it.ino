@@ -10,9 +10,10 @@
 #define walkSignButton 2
 #define startButton 1
 #define breakBeam 5
-#define led 8
+#define blueLights 8
 #define startTime 450000
 #define victoryLights 7
+
 
 unsigned long timerCount = 0; // variable to hold our timer info
 unsigned long roundTime = 0;
@@ -26,6 +27,10 @@ int points = 0;
 int roundNum = 0;
 int inputHit = -1;
 char str[] = "P I T T        ";
+
+bool flash = false;
+bool flashState = false;
+int flash_inc = 1000;
 
 TMRpcm tmrpcm;
 LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
@@ -47,13 +52,9 @@ void setup() {
   // Set up victory lights
   pinMode(victoryLights, OUTPUT);
 
-  // Set up test led
-  pinMode(led, OUTPUT);
-
   tmrpcm.speakerPin=10;
   if(!SD.begin(SD_ChipSelectPin))
   {
-    digitalWrite(led, HIGH);
     return;
   }
 
@@ -90,12 +91,13 @@ void loop() {
   {
     // Stop victory lights if on
     digitalWrite(victoryLights, LOW);
+    digitalWrite(blueLights, LOW);
+    flash_inc = 0;
+    flash = false;
     
     // Stop intro song
     //tmrpcm.disable();
     tmrpcm.loop(0);
-    
-    digitalWrite(led, HIGH);
 
     // Flag for game currently playing
     startGame = true;
@@ -153,7 +155,6 @@ void loop() {
   // Timer ran out, player lost
   if (timerCount == 0 && startGame)
   {
-    digitalWrite(led, LOW);
     lcd.clear();
     lcd.setCursor(0,0);
     lcd.print("You lost!");
@@ -199,6 +200,12 @@ void loop() {
       // Turn on victory lights
       digitalWrite(victoryLights, HIGH);
 
+      // TODO: Turn on blue flashing lights
+      flash_inc = 0;
+      digitalWrite(blueLights, HIGH);
+      flashState = true;
+      flash = true;
+
       //Play sweet caroline
       tmrpcm.loop(1);
       tmrpcm.play("SC.wav");
@@ -223,7 +230,23 @@ void loop() {
     //tmrpcm.stopPlayback();
     tmrpcm.play("Penn.wav");
   }
+  else if (flash && flash_inc == 1000) // Flash blue lights
+  {
+    if (flashState == true)
+    {
+      digitalWrite(blueLights, LOW);
+      flashState = false;
+    }
+    else
+    {
+      digitalWrite(blueLights, HIGH);
+      flashState = true;
+    }
+
+    flash_inc = 0;
+  }
   
+  flash_inc = flash_inc +1;
 
 }
 

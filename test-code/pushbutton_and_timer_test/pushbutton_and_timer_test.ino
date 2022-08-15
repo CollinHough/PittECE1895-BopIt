@@ -1,4 +1,3 @@
-
 int startButton = 13; //pin recieving info from push button
 int buttonLED = 9; //analog pin for led in button
 
